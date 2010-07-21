@@ -8,7 +8,17 @@ local settings = CreateFrame('Frame')					-- create the settings
 -- *****************************************************
 
 settings.static = {
-	maxicons = 40,		-- number of buffs/debuffs to display (for each of them! 40 comes from Blizzard, not sure, if we can go higher)
+	['updateInterval'] = 1,			-- update-interval of the buff-durations
+	['enchant_maxicons'] = 2,
+	['buff_maxicons'] = 32,			-- number of buffs to display
+	['debuff_maxicons'] = 16,		-- number of buffs to display
+}
+
+settings.options = {
+	fonts = {
+		['duration'] = 'Fonts\\FRIZQT__.TTF',
+		['count'] = 'Fonts\\FRIZQT__.TTF',
+	},
 }
 
 -- *****************************************************
