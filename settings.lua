@@ -21,5 +21,38 @@ settings.options = {
 	},
 }
 
+settings.frames = {
+	['Buffology_buffs'] = {
+		['anchorPoint'] = 'TOPRIGHT',
+		['relativeTo'] = 'UIParent',
+		['relativePoint'] = 'TOPRIGHT', 
+		['xOffset'] = -180,
+		['yOffset'] = -12,
+		['xGrowDir'] = 'LEFT', 
+		['yGrowDir'] = 'DOWN',
+		['columns'] = 16,
+		['rows'] = 2,
+		['xSpacing'] = 6,
+		['ySpacing'] = 10,
+	},
+	['Buffology_debuffs'] = {
+		['anchorPoint'] = 'TOPRIGHT',
+		['relativeTo'] = 'UIParent',
+		['relativePoint'] = 'TOPRIGHT', 
+		['xOffset'] = -180,
+		['yOffset'] = -100,
+		['xGrowDir'] = 'LEFT', 
+		['yGrowDir'] = 'DOWN',
+		['columns'] = 4,
+		['rows'] = 4,
+		['xSpacing'] = 6,
+		['ySpacing'] = 10,
+	},
+}
+
+settings.assignments = {
+	
+}
+
 -- *****************************************************
 ns.settings = settings									-- handover of the settings to the namespace

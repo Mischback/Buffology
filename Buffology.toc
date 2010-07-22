@@ -1,6 +1,6 @@
 ## Interface: 30300
 ## Author: Mischback
-## Title: |cff00ccff Buffology|r
+## Title: |cff00ccffBuffology|r
 ## X-Category: Buffs/Debuffs
 
 settings.lua

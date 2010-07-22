@@ -5,7 +5,9 @@
 	VOID debugging(STRING text) - prints a message to the chat-frame
 	FONTOBJECT CreateFontObject(FRAME parent, INT size, STRING font) - Creates a font-object
 	STRING TimeFormat(FLOAT left) - Formats a timestring
+	VOID SetUpFrames(TABLE frames, FRAME parent) - Creates the buff-frames
 	FRAME CreateIcon() - Creates an aura-icon
+	VOID UpdateAuraTime(FRAME self, INT elapsed) - Updates the time of an icon
 ]]
 
 local ADDON_NAME, ns = ...								-- get the addons namespace to exchange functions between core and layout
@@ -50,6 +52,48 @@ local lib = CreateFrame('Frame')						-- create the lib
 			rtime = '00:'..seconds
 		end
 		return rtime
+	end
+
+	--[[ Creates the buff-frames
+		VOID SetUpFrames(TABLE frames, FRAME parent)
+	]]
+	lib.SetUpFrames = function(frames, parent)
+		-- lib.debugging('SetUpFrames()')
+		for k, v in pairs(frames) do
+			-- lib.debugging(k)
+			if ( not parent.framelist[k] ) then
+				local frame = CreateFrame('Frame', k, parent)
+
+				frame.icons = 0
+
+				frame:SetWidth(32)
+				frame:SetHeight(32)
+
+				frame.texture = frame:CreateTexture()
+				frame.texture:SetAllPoints(frame)
+				frame.texture:SetTexture(1, 0, 0, 0.7)
+
+				frame.caption = lib.CreateFontObject(frame, 12, settings.options.fonts.count)
+				frame.caption:SetPoint(v['anchorPoint'], frame, v['anchorPoint'], 0, 0)
+				frame.caption:SetText(k)
+
+				frame:SetPoint(v['anchorPoint'], v['relativeTo'], v['relativePoint'], v['xOffset'], v['yOffset'])
+				frame:Hide()
+
+				parent.framelist[k] = frame
+			end
+		end
+	end
+
+	--[[
+	
+	]]
+	lib.FindDisplayFrame = function(icon)
+		if (icon.isDebuff) then
+			return 'Buffology_debuffs'
+		else
+			return 'Buffology_buffs'
+		end
 	end
 
 	--[[ Creates a buff-/debuff-icon. It's a clickable button

@@ -3,17 +3,18 @@
 	This is core.lua, where the addon-core is defined.
 ]]
 
-local ADDON_NAME, ns = ...								-- get the addons namespace to exchange functions between core and layout
-local settings = ns.settings							-- get the settings
-local lib = ns.lib										-- get the lib
-local menu = ns.menu									-- get the menu
-local core = CreateFrame('Frame')						-- create the core
+local ADDON_NAME, ns = ...									-- get the addons namespace to exchange functions between core and layout
+local settings = ns.settings								-- get the settings
+local lib = ns.lib											-- get the lib
+local menu = ns.menu										-- get the menu
+local core = CreateFrame('Frame')							-- create the core
 -- *****************************************************
 
 	local Buffology = CreateFrame('Frame', 'Buffology', UIParent)
 	local Buffology_trigger = CreateFrame('Frame', 'Buffology_trigger', Buffology)
 	local Buffology_enchant = CreateFrame('Frame', 'Buffology_enchant', Buffology)
 	local Buffology_Icons = {}
+	Buffology.framelist = {}
 
 	--[[ Updates the duration-time of fading auras
 		VOID WeaponEnchantWatcher(FRAME self, INT elapsed)
@@ -25,7 +26,7 @@ local core = CreateFrame('Frame')						-- create the core
 			-- lib.debugging('checking for WeaponEnchant')
 
 			if ( not PlayerFrame.unit or PlayerFrame.unit ~= "player" ) then
-				return									-- don't check, if the player doesn't control his char
+				return										-- don't check, if the player doesn't control his char
 			end
 
 			local hasMainHandEnchant, mainHandExpiration, mainHandCharges, hasOffHandEnchant, offHandExpiration, offHandCharges = GetWeaponEnchantInfo()
@@ -47,8 +48,8 @@ local core = CreateFrame('Frame')						-- create the core
 				icon:Show()
 				Buffology_Icons[1] = icon
 			else
-				if ( Buffology_Icons[1] ) then							-- hide icon, if one has already been created
-					Buffology_Icons[1]:Hide()							-- hide icon, if one has already been created
+				if ( Buffology_Icons[1] ) then				-- hide icon, if one has already been created
+					Buffology_Icons[1]:Hide()				-- hide icon, if one has already been created
 				end
 			end
 
@@ -68,8 +69,8 @@ local core = CreateFrame('Frame')						-- create the core
 				icon:Show()
 				Buffology_Icons[2] = icon
 			else
-				if ( Buffology_Icons[2] ) then							-- hide icon, if one has already been created
-					Buffology_Icons[2]:Hide()							-- hide icon, if one has already been created
+				if ( Buffology_Icons[2] ) then				-- hide icon, if one has already been created
+					Buffology_Icons[2]:Hide()				-- hide icon, if one has already been created
 				end
 			end
 
@@ -83,33 +84,34 @@ local core = CreateFrame('Frame')						-- create the core
 	core.UpdateIcon = function(unit, index, offset, filter)
 		local name, rank, texture, count, dtype, duration, timeleft, caster, _, _, spellID = UnitAura(unit, index, filter)
 		local icon = Buffology_Icons[index+offset]
-		if ( not name ) then							-- UNIT_AURA was triggered, but there is no aura on this index (works damn good, when an aura faded, 'cause UNIT_AURA is triggered in this case, too)
-			if ( icon ) then							-- hide icon, if one has already been created
-				icon:Hide()								-- hide icon, if one has already been created
+		if ( not name ) then								-- UNIT_AURA was triggered, but there is no aura on this index (works damn good, when an aura faded, 'cause UNIT_AURA is triggered in this case, too)
+			if ( icon ) then								-- hide icon, if one has already been created
+				icon:Hide()									-- hide icon, if one has already been created
 			end
 		else
-			if ( not icon ) then						-- UNIT_AURA was triggered, but there is no icon for this index -> let's create one
-				icon = lib.CreateIcon()					-- create Icon if necessary
+			-- lib.debugging(spellID..': '..name)
+			if ( not icon ) then							-- UNIT_AURA was triggered, but there is no icon for this index -> let's create one
+				icon = lib.CreateIcon()						-- create Icon if necessary
 			end
 
-			icon.name = name							-- set the name
-			icon.spellID = spellID						-- set the spellID
-			icon.texture:SetTexture(texture)			-- set the texture
+			icon.name = name								-- set the name
+			icon.spellID = spellID							-- set the spellID
+			icon.texture:SetTexture(texture)				-- set the texture
 			if ( filter == 'HARMFUL' ) then
-				icon.isDebuff = true					-- set debuff-flag
+				icon.isDebuff = true						-- set debuff-flag
 			end
 
-			if ( duration > 0 ) then					-- we got a time-limited aura
-				icon.timeleft = timeleft				-- apply timeleft
+			if ( duration > 0 ) then						-- we got a time-limited aura
+				icon.timeleft = timeleft					-- apply timeleft
 				icon:SetScript('OnUpdate', lib.UpdateAuraTime)	-- apply the OnUpdate-handler
-				icon.duration:Show()					-- show the text
-			else										-- we got a permanent aura
-				icon.timeleft = nil						-- no timeleft
-				icon:SetScript('OnUpdate', nil)			-- no OnUpdate-handler necessary
-				icon.duration:Hide()					-- hide the text
+				icon.duration:Show()						-- show the text
+			else											-- we got a permanent aura
+				icon.timeleft = nil							-- no timeleft
+				icon:SetScript('OnUpdate', nil)				-- no OnUpdate-handler necessary
+				icon.duration:Hide()						-- hide the text
 			end
 
-			if ( icon.cd ) then							-- apply the cooldown-spiral TODO: Do we want this?
+			if ( icon.cd ) then								-- apply the cooldown-spiral TODO: Do we want this?
 				if ( duration and duration > 0 ) then
 					icon.cd:SetCooldown(timeleft - duration, duration)
 					icon.cd:Show()
@@ -117,6 +119,8 @@ local core = CreateFrame('Frame')						-- create the core
 					icon.cd:Hide()
 				end
 			end
+
+			icon.display = lib.FindDisplayFrame(icon)
 
 			icon:Show()
 			Buffology_Icons[index+offset] = icon
@@ -127,45 +131,43 @@ local core = CreateFrame('Frame')						-- create the core
 		VOID Trigger(STRING unit)
 	]]
 	core.Trigger = function(_, _, unit)
-		if ( unit ~= 'player' ) then return end			-- jump out, if we're not on 'player'
-														-- TODO: Do we want to manage more than player-buffs?!?
+		if ( unit ~= 'player' ) then return end				-- jump out, if we're not on 'player'
+															-- TODO: Do we want to manage more than player-buffs?!?
 		-- lib.debugging('Trigger()')
 		local index
 		for index = 1, settings.static.buff_maxicons do		-- handle BUFFS
 			core.UpdateIcon(unit, index, settings.static.enchant_maxicons, 'HELPFUL')
 		end
 
-		for index = 1, settings.static.debuff_maxicons do		-- handle DEBUFFS
+		for index = 1, settings.static.debuff_maxicons do	-- handle DEBUFFS
 			core.UpdateIcon(unit, index, (settings.static.buff_maxicons + settings.static.enchant_maxicons), 'HARMFUL')
 		end
 
--- QUICK'n'DIRTY positioning START
+-- UNTESTED POSITIONING START
+		for _, v in pairs(Buffology.framelist) do
+			v.icons = 0
+		end
 		for k, v in pairs(Buffology_Icons) do
-			if (v.isDebuff) then
-				if (k == settings.static.buff_maxicons + settings.static.enchant_maxicons + 1) then
-					v:SetPoint('CENTER', UIParent, 'CENTER', 0, -60)
-				else
-					v:SetPoint('CENTER', Buffology_Icons[k-1], 40, 0)
-				end
-			else 
-				if (k == 1) then
-					v:SetPoint('CENTER', UIParent, 'CENTER', 0, 60)
-				elseif (k == settings.static.enchant_maxicons + 1) then
-					v:SetPoint('CENTER', UIParent, 'CENTER', 0, 0)
-				else
-					v:SetPoint('CENTER', Buffology_Icons[k-1], 40, 0)
-				end
+			if ( v:IsShown() ) then
+				v:SetPoint(settings.frames[v.display].anchorPoint, 
+							Buffology.framelist[v.display], 
+							settings.frames[v.display].anchorPoint, 
+							- (Buffology.framelist[v.display].icons*(30+settings.frames[v.display].xSpacing)), 
+							0)
+				Buffology.framelist[v.display].icons = Buffology.framelist[v.display].icons + 1
 			end
 		end
--- QUICK'n'DIRTY positioning END
+-- UNTESTED POSITIONING END
 	end
 
 	Buffology:RegisterEvent('ADDON_LOADED')
 	Buffology:SetScript('OnEvent', function(self, event, addon)
-		if ( addon ~= ADDON_NAME ) then return end		-- jump out, if it's not our addon
-		if not ( Buffology_trigger ) then return end	-- jump out, if we don't got a trigger
+		if ( addon ~= ADDON_NAME ) then return end			-- jump out, if it's not our addon
+		if not ( Buffology_trigger ) then return end		-- jump out, if we don't got a trigger
 
 		-- lib.debugging('Buffology loaded...')
+
+		lib.SetUpFrames(settings.frames, Buffology)
 
 		Buffology_trigger:RegisterEvent('UNIT_AURA')
 		Buffology_trigger:RegisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
@@ -175,7 +177,7 @@ local core = CreateFrame('Frame')						-- create the core
 		Buffology_trigger:SetScript('OnEvent', core.Trigger)
 
 		Buffology_enchant.lastUpdate = 0
-		Buffology_enchant:SetScript('OnUpdate', core.WeaponEnchantWatcher)
+		-- Buffology_enchant:SetScript('OnUpdate', core.WeaponEnchantWatcher)
 
 		core.Trigger(_, _, 'player')
 	end)
