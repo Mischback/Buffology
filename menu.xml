@@ -1,9 +1,149 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
 	<Script file="menu.lua" />
 
+	<Frame name="BuffologyMenuPageTemplate" virtual="true" toplevel="true" framStrata="DIALOG" moveable="false">
+		<Anchors>
+			<Anchor point="TOPLEFT">
+				<Offset><AbsDimension x="5" y="-50" /></Offset>
+			</Anchor>
+			<Anchor point="BOTTOMRIGHT">
+				<Offset><AbsDimension x="-5" y="30" /></Offset>
+			</Anchor>
+		</Anchors>
+		<Layers>
+			<Layer level="BORDER">
+				<Texture name="$parentBorderTopLeft" file="Interface\AddOns\Buffology\media\border">
+					<Size>
+						<AbsDimension x="10" y="10" />
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="-4" y="4"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0" right="0.33333" top="0" bottom="0.33333" />
+				</Texture>
+				<Texture name="$parentBorderTopRight" file="Interface\AddOns\Buffology\media\border">
+					<Size>
+						<AbsDimension x="10" y="10" />
+					</Size>
+					<Anchors>
+						<Anchor point="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="4" y="4"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.66666" right="1" top="0" bottom="0.33333" />
+				</Texture>
+				<Texture name="$parentBorderBottomLeft" file="Interface\AddOns\Buffology\media\border">
+					<Size>
+						<AbsDimension x="10" y="10" />
+					</Size>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="-4" y="-4"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0" right="0.33333" top="0.66666" bottom="1" />
+				</Texture>
+				<Texture name="$parentBorderBottomRight" file="Interface\AddOns\Buffology\media\border">
+					<Size>
+						<AbsDimension x="10" y="10" />
+					</Size>
+					<Anchors>
+						<Anchor point="BOTTOMRIGHT">
+							<Offset>
+								<AbsDimension x="4" y="-4"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.66666" right="1" top="0.66666" bottom="1" />
+				</Texture>
+				<Texture name="$parentBorderTop" file="Interface\AddOns\Buffology\media\border">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentBorderTopLeft" relativePoint="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+						<Anchor point="BOTTOMRIGHT" relativeTo="$parentBorderTopRight" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.33333" right="0.66666" top="0" bottom="0.33333" />
+				</Texture>
+				<Texture name="$parentBorderRight" file="Interface\AddOns\Buffology\media\border">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentBorderTopRight" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+						<Anchor point="BOTTOMRIGHT" relativeTo="$parentBorderBottomRight" relativePoint="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.66666" right="1" top="0.33333" bottom="0.66666" />
+				</Texture>
+				<Texture name="$parentBorderBottom" file="Interface\AddOns\Buffology\media\border">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentBorderBottomLeft" relativePoint="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+						<Anchor point="BOTTOMRIGHT" relativeTo="$parentBorderBottomRight" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.33333" right="0.66666" top="0.66666" bottom="1" />
+				</Texture>
+				<Texture name="$parentBorderLeft" file="Interface\AddOns\Buffology\media\border">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentBorderTopLeft" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+						<Anchor point="BOTTOMRIGHT" relativeTo="$parentBorderBottomLeft" relativePoint="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0" right="0.33333" top="0.33333" bottom="0.66666" />
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<FontString name="$parentCaption" font="Fonts\FRIZQT__.TTF" text="Title" justifyH="LEFT" justifyV="TOP">
+					<Color r="1" g="1" b="1" a="1"/>
+					<FontHeight val="14"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parent" x="5" y="17" />
+					</Anchors>
+					<Shadow>
+						<Offset x="1" y="1" />
+						<Color r="0" g="0" b="0"/>
+					</Shadow>
+				</FontString>
+			</Layer>
+		</Layers>
+	</Frame>
+
 	<Frame name="BuffologyMenuSkel" virtual="true" toplevel="true" frameStrata="DIALOG" movable="true" enableMouse="true" parent="UIParent">
 		<Size>
-			<AbsDimension x="600" y="225" />
+			<AbsDimension x="600" y="400" />
 		</Size>
 		<Anchors>
 			<Anchor point="CENTER">
@@ -28,19 +168,195 @@
 					 <Color r="0" g="0" b="0" a="0.7"/>
 				</Texture>
 			</Layer>
+			<Layer level="BORDER">
+				<Texture name="BorderTopLeft" file="Interface\AddOns\Buffology\media\border">
+					<Size>
+						<AbsDimension x="10" y="10" />
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="-4" y="4"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0" right="0.33333" top="0" bottom="0.33333" />
+				</Texture>
+				<Texture name="BorderTopRight" file="Interface\AddOns\Buffology\media\border">
+					<Size>
+						<AbsDimension x="10" y="10" />
+					</Size>
+					<Anchors>
+						<Anchor point="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="4" y="4"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.66666" right="1" top="0" bottom="0.33333" />
+				</Texture>
+				<Texture name="BorderBottomLeft" file="Interface\AddOns\Buffology\media\border">
+					<Size>
+						<AbsDimension x="10" y="10" />
+					</Size>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="-4" y="-4"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0" right="0.33333" top="0.66666" bottom="1" />
+				</Texture>
+				<Texture name="BorderBottomRight" file="Interface\AddOns\Buffology\media\border">
+					<Size>
+						<AbsDimension x="10" y="10" />
+					</Size>
+					<Anchors>
+						<Anchor point="BOTTOMRIGHT">
+							<Offset>
+								<AbsDimension x="4" y="-4"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.66666" right="1" top="0.66666" bottom="1" />
+				</Texture>
+				<Texture name="BorderTop" file="Interface\AddOns\Buffology\media\border">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="BorderTopLeft" relativePoint="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+						<Anchor point="BOTTOMRIGHT" relativeTo="BorderTopRight" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.33333" right="0.66666" top="0" bottom="0.33333" />
+				</Texture>
+				<Texture name="BorderRight" file="Interface\AddOns\Buffology\media\border">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="BorderTopRight" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+						<Anchor point="BOTTOMRIGHT" relativeTo="BorderBottomRight" relativePoint="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.66666" right="1" top="0.33333" bottom="0.66666" />
+				</Texture>
+				<Texture name="BorderBottom" file="Interface\AddOns\Buffology\media\border">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="BorderBottomLeft" relativePoint="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+						<Anchor point="BOTTOMRIGHT" relativeTo="BorderBottomRight" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.33333" right="0.66666" top="0.66666" bottom="1" />
+				</Texture>
+				<Texture name="BorderLeft" file="Interface\AddOns\Buffology\media\border">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="BorderTopLeft" relativePoint="BOTTOMLEFT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+						<Anchor point="BOTTOMRIGHT" relativeTo="BorderBottomLeft" relativePoint="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0" right="0.33333" top="0.33333" bottom="0.66666" />
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<FontString name="$parentCaption" font="Fonts\FRIZQT__.TTF" text="Buffology - Menu" justifyH="LEFT" justifyV="TOP">
+					<Color r="1" g="1" b="1" a="1"/>
+					<FontHeight val="16"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parent" x="5" y="-5" />
+					</Anchors>
+					<Shadow>
+						<Offset x="1" y="1" />
+						<Color r="0" g="0" b="0"/>
+					</Shadow>
+				</FontString>
+			</Layer>
 		</Layers>
 		<Frames>
-			<Button name="$parentButtonClose" inherits="OptionsButtonTemplate" text="Close">
+
+			<Frame name="$parentTabFrames" inherits="BuffologyMenuPageTemplate">
+				<Scripts>
+					<OnShow>
+						Buffology_Frames();
+					</OnShow>
+				</Scripts>
+			</Frame>
+
+			<Frame name="$parentTabFilters" inherits="BuffologyMenuPageTemplate" hidden="true">
+				<Scripts>
+					<OnShow>
+						Buffology_Filters();
+					</OnShow>
+				</Scripts>
+			</Frame>
+
+			<Button name="$parentTabFramesButton" inherits="OptionsButtonTemplate" text="Frames">
 				<Anchors>
-					<Anchor point="BOTTOMRIGHT">
-						<Offset><AbsDimension x="0" y="0"/></Offset>
+					<Anchor point="BOTTOMLEFT">
+						<Offset><AbsDimension x="20" y="4"/></Offset>
 					</Anchor>
 				</Anchors>
 				<Scripts>
-					<OnClick> Buffology_MenuFrameClose() </OnClick>
+					<OnClick> Buffology_TabFramesButton(); </OnClick>
 				</Scripts>
 			</Button>
+
+			<Button name="$parentTabFiltersButton" inherits="OptionsButtonTemplate" text="Filters">
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parentTabFramesButton" relativePoint="RIGHT">
+						<Offset><AbsDimension x="5" y="0"/></Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick> Buffology_TabFiltersButton(); </OnClick>
+				</Scripts>
+			</Button>
+
+			<Button name="$parentCloseButton" inherits="OptionsButtonTemplate" text="Close">
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT">
+						<Offset><AbsDimension x="-2" y="4"/></Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick> Buffology_MenuFrameClose(); </OnClick>
+				</Scripts>
+			</Button>
+
 		</Frames>
+
+		<Scripts>
+		   <OnShow>
+			   PlaySound("UChatScrollButton");
+		   </OnShow>
+		   <OnHide>
+			   PlaySound("UChatScrollButton");
+		   </OnHide>
+		</Scripts>
 	</Frame>
 
 </Ui>
