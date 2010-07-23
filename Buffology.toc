@@ -1,9 +1,12 @@
 ## Interface: 30300
 ## Author: Mischback
-## Title: |cff00ccffBuffology|r
+## Title: Buffology
 ## X-Category: Buffs/Debuffs
+## Notes: This addon handles buffs and debuffs of the player with filter possibilities.
 
+menu.xml
 settings.lua
+localization.lua
 lib.lua
 menu.lua
 core.lua

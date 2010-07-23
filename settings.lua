@@ -8,15 +8,16 @@ local settings = CreateFrame('Frame')					-- create the settings
 -- *****************************************************
 
 settings.static = {
+	['iconSize'] = 30,				-- default icon-size
 	['updateInterval'] = 1,			-- update-interval of the buff-durations
-	['enchant_maxicons'] = 2,
+	['enchant_maxicons'] = 2,		-- number of max weapon-buffs to display
 	['buff_maxicons'] = 32,			-- number of buffs to display
 	['debuff_maxicons'] = 16,		-- number of buffs to display
 }
 
 settings.options = {
 	fonts = {
-		['duration'] = 'Fonts\\FRIZQT__.TTF',
+		['timestring'] = 'Fonts\\FRIZQT__.TTF',
 		['count'] = 'Fonts\\FRIZQT__.TTF',
 	},
 }

@@ -1,10 +1,17 @@
 --[[ Buffology is a World of Warcraft-addon by Mischback.
 
 	This is core.lua, where the addon-core is defined.
+
+	##### FUNCTIONS #####
+	VOID WeaponEnchantWatcher(FRAME self, INT elapsed) - Handles weapon enchants
+	VOID UpdateIcon(STRING unit, INT index, INT offset, STRING filter) - Gets the buff-/debuff-details and creates a new icon, if necessary
+	VOID SetIconPositions() - Sets the positions off all (visible) icons
+	VOID Trigger(STRING unit) - UNIT_AURA triggers this
 ]]
 
 local ADDON_NAME, ns = ...									-- get the addons namespace to exchange functions between core and layout
 local settings = ns.settings								-- get the settings
+local strings = ns.strings									-- get the localization
 local lib = ns.lib											-- get the lib
 local menu = ns.menu										-- get the menu
 local core = CreateFrame('Frame')							-- create the core
@@ -16,7 +23,20 @@ local core = CreateFrame('Frame')							-- create the core
 	local Buffology_Icons = {}
 	Buffology.framelist = {}
 
-	--[[ Updates the duration-time of fading auras
+	--[[
+	
+	]]
+	core.SlashHandler = function(msg)
+		if ( msg == 'menu' ) then
+			menu.CreateMenu()
+			menu.MenuFrame:Show()
+			for _, v in pairs(Buffology.framelist) do
+				v:Show()
+			end
+		end
+	end
+
+	--[[ Handles weapon enchants
 		VOID WeaponEnchantWatcher(FRAME self, INT elapsed)
 		This is an OnUpdate-Eventhandler, which checks, if you have a temporary weapon-enchant.
 	]]
@@ -103,12 +123,13 @@ local core = CreateFrame('Frame')							-- create the core
 
 			if ( duration > 0 ) then						-- we got a time-limited aura
 				icon.timeleft = timeleft					-- apply timeleft
+				icon.duration = timeleft					-- apply duration
 				icon:SetScript('OnUpdate', lib.UpdateAuraTime)	-- apply the OnUpdate-handler
-				icon.duration:Show()						-- show the text
+				icon.timestring:Show()						-- show the text
 			else											-- we got a permanent aura
 				icon.timeleft = nil							-- no timeleft
 				icon:SetScript('OnUpdate', nil)				-- no OnUpdate-handler necessary
-				icon.duration:Hide()						-- hide the text
+				icon.timestring:Hide()						-- hide the text
 			end
 
 			if ( icon.cd ) then								-- apply the cooldown-spiral TODO: Do we want this?
@@ -120,10 +141,47 @@ local core = CreateFrame('Frame')							-- create the core
 				end
 			end
 
+			icon:SetID(index)
+
 			icon.display = lib.FindDisplayFrame(icon)
 
 			icon:Show()
 			Buffology_Icons[index+offset] = icon
+		end
+	end
+
+	--[[ Sets the positions off all (visible) icons
+		VOID SetIconPositions()
+	]]
+	core.SetIconPositions = function()
+		for _, v in pairs(Buffology.framelist) do			-- clear all frames
+			v.icons = 0										-- no icons in any frame
+		end
+
+		local xModifier, yModifier
+		for k, v in pairs(Buffology_Icons) do
+			if ( v:IsShown() ) then							-- just do positioning for visible icons
+
+				xModifier = -1								-- default direction: LEFT
+				yModifier = -1								-- default direction: DOWN
+
+				if ( settings.frames[v.display].xGrowDir == 'RIGHT' ) then
+					xModifier = 1							-- switching to grow RIGHT
+				end
+
+				if ( settings.frames[v.display].xGrowDir == 'UP' ) then
+					yModifier = 1							-- switching to grow UP
+				end
+
+															-- SetPoint() OF HELL!!!
+				v:SetPoint(settings.frames[v.display].anchorPoint, 
+							Buffology.framelist[v.display], 
+							settings.frames[v.display].anchorPoint, 
+							xModifier * (Buffology.framelist[v.display].icons % settings.frames[v.display].columns) * (settings.static.iconSize + settings.frames[v.display].xSpacing),
+							yModifier * (math.floor(Buffology.framelist[v.display].icons / settings.frames[v.display].columns)) * (settings.static.iconSize + settings.frames[v.display].ySpacing) )
+															-- inc the number of icons on this frame!
+				Buffology.framelist[v.display].icons = Buffology.framelist[v.display].icons + 1
+			end
 		end
 	end
 
@@ -143,21 +201,8 @@ local core = CreateFrame('Frame')							-- create the core
 			core.UpdateIcon(unit, index, (settings.static.buff_maxicons + settings.static.enchant_maxicons), 'HARMFUL')
 		end
 
--- UNTESTED POSITIONING START
-		for _, v in pairs(Buffology.framelist) do
-			v.icons = 0
-		end
-		for k, v in pairs(Buffology_Icons) do
-			if ( v:IsShown() ) then
-				v:SetPoint(settings.frames[v.display].anchorPoint, 
-							Buffology.framelist[v.display], 
-							settings.frames[v.display].anchorPoint, 
-							- (Buffology.framelist[v.display].icons*(30+settings.frames[v.display].xSpacing)), 
-							0)
-				Buffology.framelist[v.display].icons = Buffology.framelist[v.display].icons + 1
-			end
-		end
--- UNTESTED POSITIONING END
+		core.SetIconPositions()
+
 	end
 
 	Buffology:RegisterEvent('ADDON_LOADED')
@@ -167,7 +212,16 @@ local core = CreateFrame('Frame')							-- create the core
 
 		-- lib.debugging('Buffology loaded...')
 
-		lib.SetUpFrames(settings.frames, Buffology)
+		strings.loadLocalizedStrings()
+
+		local BlizzFrame = _G['BuffFrame']					-- get the default Blizzard BuffFrame
+		BlizzFrame:UnregisterEvent('UNIT_AURA')				-- Unregister the event
+		BlizzFrame:Hide()									-- hide the default Blizzard BuffFrame
+
+		SLASH_BUFFOLOGY1 = strings.slashcommand
+		SlashCmdList['BUFFOLOGY'] = core.SlashHandler
+
+		lib.SetUpFrames(settings.frames, Buffology)			-- create our frames
 
 		Buffology_trigger:RegisterEvent('UNIT_AURA')
 		Buffology_trigger:RegisterEvent('ACTIVE_TALENT_GROUP_CHANGED')

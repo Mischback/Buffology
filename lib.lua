@@ -1,17 +1,22 @@
 --[[ Buffology is a World of Warcraft-addon by Mischback.
 
 	This is lib.lua, where general functions are implemented.
-	
+
+	##### FUNCTIONS #####
 	VOID debugging(STRING text) - prints a message to the chat-frame
+	VOID TTOnEnter()
+	VOID TTOnLeave()
 	FONTOBJECT CreateFontObject(FRAME parent, INT size, STRING font) - Creates a font-object
 	STRING TimeFormat(FLOAT left) - Formats a timestring
 	VOID SetUpFrames(TABLE frames, FRAME parent) - Creates the buff-frames
+	STRING FindDisplayFrame(BUTTON icon) - Finds the name of the frame, an icon should be attached to
 	FRAME CreateIcon() - Creates an aura-icon
 	VOID UpdateAuraTime(FRAME self, INT elapsed) - Updates the time of an icon
 ]]
 
 local ADDON_NAME, ns = ...								-- get the addons namespace to exchange functions between core and layout
 local settings = ns.settings							-- get the settings
+local strings = ns.strings								-- get the localization
 local lib = CreateFrame('Frame')						-- create the lib
 -- *****************************************************
 
@@ -23,7 +28,35 @@ local lib = CreateFrame('Frame')						-- create the lib
 		DEFAULT_CHAT_FRAME:AddMessage('|cffffff00Buffology:|r |cffeeeeee'..text..'|r')
 	end
 
-    --[[ Creates a font-object
+    --[[
+		VOID TTOnEnter(BUTTON self)
+	]]
+	lib.TTOnEnter = function(self)
+		if(not self:IsVisible()) then return end
+
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
+		if ( self.isDebuff ) then
+			GameTooltip:SetUnitAura('player', self:GetID(), 'HARMFUL')
+		else
+			GameTooltip:SetUnitAura('player', self:GetID(), 'HELPFUL')
+		end
+	end
+
+	--[[
+		VOID TTOnLeave()
+	]]
+	lib.TTOnLeave = function()
+		GameTooltip:Hide()
+	end
+
+	--[[
+		VOID CancelBuff(BUTTON self)
+	]]
+	lib.CancelBuff = function(self)
+		CancelUnitBuff('player', self:GetID(), nil)
+	end
+
+	--[[ Creates a font-object
 		FONTOBJECT CreateFontObject(FRAME parent, INT size, STRING font)
 	]]
 	lib.CreateFontObject = function(parent, size, font)
@@ -66,8 +99,8 @@ local lib = CreateFrame('Frame')						-- create the lib
 
 				frame.icons = 0
 
-				frame:SetWidth(32)
-				frame:SetHeight(32)
+				frame:SetWidth(settings.static.iconSize+5)
+				frame:SetHeight(settings.static.iconSize+5)
 
 				frame.texture = frame:CreateTexture()
 				frame.texture:SetAllPoints(frame)
@@ -85,8 +118,8 @@ local lib = CreateFrame('Frame')						-- create the lib
 		end
 	end
 
-	--[[
-	
+	--[[ Finds the name of the frame, an icon should be attached to
+		STRING FindDisplayFrame(BUTTON icon)
 	]]
 	lib.FindDisplayFrame = function(icon)
 		if (icon.isDebuff) then
@@ -98,17 +131,18 @@ local lib = CreateFrame('Frame')						-- create the lib
 
 	--[[ Creates a buff-/debuff-icon. It's a clickable button
 		FRAME CreateIcon()
-		TODO: Work on COUNT, TIME and TOOLTIP, make it CANCELABLE, perhaps DEBUFF-coloring
+		TODO: Work on COUNT, perhaps DEBUFF-coloring
 	]]
 	lib.CreateIcon = function()
 		-- lib.debugging('CreateIcon()')
 
 		local icon = CreateFrame("Button", nil, UIParent)
-		-- icon:EnableMouse(true)
-		-- icon:RegisterForClicks'RightButtonUp'
+		icon:EnableMouse(true)
+		icon:RegisterForClicks('RightButtonUp')
+		icon:SetScript('OnClick', lib.CancelBuff)
 
-		icon:SetWidth(30)
-		icon:SetHeight(30)
+		icon:SetWidth(settings.static.iconSize)
+		icon:SetHeight(settings.static.iconSize)
 
 		local cd = CreateFrame("Cooldown", nil, icon)
 		cd:SetAllPoints(icon)
@@ -118,10 +152,10 @@ local lib = CreateFrame('Frame')						-- create the lib
 		texture:SetAllPoints(icon)
 		icon.texture = texture
 
-		local duration = lib.CreateFontObject(icon, 11, settings.options.fonts.duration)
-		duration:SetPoint('TOP', icon, 'BOTTOM', 0, 0)
-		icon.duration = duration
-		icon.duration:SetText('00:00')
+		local timestring = lib.CreateFontObject(icon, 11, settings.options.fonts.timestring)
+		timestring:SetPoint('TOP', icon, 'BOTTOM', 0, 0)
+		icon.timestring = timestring
+		icon.timestring:SetText('00:00')
 
 		-- local count = icon:CreateFontString(nil, "OVERLAY")
 		-- count:SetFontObject(NumberFontNormal)
@@ -134,10 +168,8 @@ local lib = CreateFrame('Frame')						-- create the lib
 		-- overlay:SetTexCoord(.296875, .5703125, 0, .515625)
 		-- icon.overlay = overlay
 
-		-- TODO: Get a tooltip
-		-- icon.UpdateTooltip = UpdateTooltip
-		-- icon:SetScript("OnEnter", OnEnter)
-		-- icon:SetScript("OnLeave", OnLeave)
+		icon:SetScript("OnEnter", lib.TTOnEnter)
+		icon:SetScript("OnLeave", lib.TTOnLeave)
 
 		icon.lastUpdate = 0
 
@@ -152,7 +184,8 @@ local lib = CreateFrame('Frame')						-- create the lib
 		self.lastUpdate = self.lastUpdate + elapsed
 		if ( self.lastUpdate > settings.static.updateInterval) then
 			-- lib.debugging('update '..self.name)
-			self.duration:SetText(lib.TimeFormat(self.timeleft - GetTime()))
+			self.duration = self.timeleft - GetTime()
+			self.timestring:SetText(lib.TimeFormat(self.duration))
 			self.lastUpdate = 0
 		end
 	end
