@@ -4,8 +4,9 @@
 
 	##### FUNCTIONS #####
 	VOID debugging(STRING text) - prints a message to the chat-frame
-	VOID TTOnEnter()
-	VOID TTOnLeave()
+	VOID TTOnEnter() - updates the tooltip on hover
+	VOID TTOnLeave() - hides the tooltip on leave
+	VOID collectAura(INT id, STRING name) - collects the aura
 	FONTOBJECT CreateFontObject(FRAME parent, INT size, STRING font) - Creates a font-object
 	STRING TimeFormat(FLOAT left) - Formats a timestring
 	VOID SetUpFrames(TABLE frames, FRAME parent) - Creates the buff-frames
@@ -47,6 +48,13 @@ local lib = CreateFrame('Frame')						-- create the lib
 	]]
 	lib.TTOnLeave = function()
 		GameTooltip:Hide()
+	end
+
+	--[[ Collects the aura
+		VOID CollectAura(INT id, STRING name)
+	]]
+	lib.CollectAura = function(id, name)
+		BuffologyAuraList[id] = name
 	end
 
 	--[[
@@ -95,7 +103,7 @@ local lib = CreateFrame('Frame')						-- create the lib
 		for k, v in pairs(frames) do
 			-- lib.debugging(k)
 			if ( not parent.framelist[k] ) then
-				local frame = CreateFrame('Frame', k, parent)
+				local frame = CreateFrame('Button', k, parent)
 
 				frame.icons = 0
 
@@ -112,6 +120,8 @@ local lib = CreateFrame('Frame')						-- create the lib
 
 				frame:SetPoint(v['anchorPoint'], v['relativeTo'], v['relativePoint'], v['xOffset'], v['yOffset'])
 				frame:Hide()
+
+				frame:RegisterForClicks('LeftButtonUp')
 
 				parent.framelist[k] = frame
 			end

@@ -3,6 +3,7 @@
 	This is core.lua, where the addon-core is defined.
 
 	##### FUNCTIONS #####
+	VOID SlashHandler() - Handles the slash-command
 	VOID WeaponEnchantWatcher(FRAME self, INT elapsed) - Handles weapon enchants
 	VOID UpdateIcon(STRING unit, INT index, INT offset, STRING filter) - Gets the buff-/debuff-details and creates a new icon, if necessary
 	VOID SetIconPositions() - Sets the positions off all (visible) icons
@@ -23,14 +24,15 @@ local core = CreateFrame('Frame')							-- create the core
 	local Buffology_Icons = {}
 	Buffology.framelist = {}
 
-	--[[
-	
+	--[[ Handles the slash-command
+		VOID SlashHandler()
 	]]
 	core.SlashHandler = function(msg)
-		if ( msg == 'menu' ) then
+		if ( msg == strings.menutrigger ) then
 			menu.CreateMenu()
 			menu.MenuFrame:Show()
 			for _, v in pairs(Buffology.framelist) do
+				v:SetScript('OnClick', menu.BuffologySetActiveFrame)
 				v:Show()
 			end
 		end
@@ -147,6 +149,8 @@ local core = CreateFrame('Frame')							-- create the core
 
 			icon:Show()
 			Buffology_Icons[index+offset] = icon
+
+			lib.CollectAura(spellID, name)
 		end
 	end
 
@@ -208,18 +212,59 @@ local core = CreateFrame('Frame')							-- create the core
 	Buffology:RegisterEvent('ADDON_LOADED')
 	Buffology:SetScript('OnEvent', function(self, event, addon)
 		if ( addon ~= ADDON_NAME ) then return end			-- jump out, if it's not our addon
-		if not ( Buffology_trigger ) then return end		-- jump out, if we don't got a trigger
+		if ( not Buffology_trigger ) then return end		-- jump out, if we don't got a trigger
 
 		-- lib.debugging('Buffology loaded...')
 
-		strings.loadLocalizedStrings()
+	-- ***** Loading the SavedVars *************************
+
+		do
+			if ( not BuffologyOptions) then
+				BuffologyOptions = {}
+			end
+			for k, v in pairs(settings.options) do
+				if type(v) ~= type(BuffologyOptions[k]) then
+					BuffologyOptions[k] = v
+				end
+			end
+			settings.options = BuffologyOptions
+
+			if ( not BuffologyFrames) then
+				BuffologyFrames = {}
+			end
+			for k, v in pairs(settings.frames) do
+				if type(v) ~= type(BuffologyFrames[k]) then
+					BuffologyFrames[k] = v
+				end
+			end
+			settings.frames = BuffologyFrames
+
+			if ( not BuffologyAssignments) then
+				BuffologyAssignments = {}
+			end
+			for k, v in pairs(settings.assignments) do
+				if type(v) ~= type(BuffologyAssignments[k]) then
+					BuffologyAssignments[k] = v
+				end
+			end
+			settings.assignments = BuffologyAssignments
+
+			if ( not BuffologyAuraList ) then
+				BuffologyAuraList = {}
+				BuffologyAuraList['locale'] = GetLocale()
+			end
+		end
+
+	-- ***** Setting Up Buffology **************************
+
+		strings.loadLocalizedStrings()						-- get the correct localization
 
 		local BlizzFrame = _G['BuffFrame']					-- get the default Blizzard BuffFrame
 		BlizzFrame:UnregisterEvent('UNIT_AURA')				-- Unregister the event
 		BlizzFrame:Hide()									-- hide the default Blizzard BuffFrame
 
-		SLASH_BUFFOLOGY1 = strings.slashcommand
-		SlashCmdList['BUFFOLOGY'] = core.SlashHandler
+		SLASH_BUFFOLOGY1 = strings.slashcommand				-- register slash-command
+		SlashCmdList['BUFFOLOGY'] = core.SlashHandler		-- register slash-command
 
 		lib.SetUpFrames(settings.frames, Buffology)			-- create our frames
 
