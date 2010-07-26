@@ -11,6 +11,7 @@ local menu = CreateFrame('Frame')						-- create the menu
 
 local MENUFRAMENAME = 'BuffologyMenu'
 menu.info = {}
+menu.bufflist = {}
 -- *****************************************************
 
 BuffologyMenuFunctions = {
@@ -46,6 +47,7 @@ BuffologyMenuFunctions = {
 		['OnShow'] = function(name)
 			_G[name..'Caption']:SetText(strings.buffology_menu.caption_frames)	-- set the panel's caption
 			_G[name..'FrameTitle']:SetText(strings.buffology_menu.frame_dropdown_title)	-- set the panel's caption
+			_G[name..'Option_Save']:SetText(strings.buffology_menu.frame_saveButton)
 			_G[name..'Option_anchorPointCaption']:SetText(strings.buffology_menu.frame_anchorPointCaption..':')
 			_G[name..'Option_relativeToCaption']:SetText(strings.buffology_menu.frame_relativeToCaption..':')
 			_G[name..'Option_relativePointCaption']:SetText(strings.buffology_menu.frame_relativePointCaption..':')
@@ -87,18 +89,124 @@ BuffologyMenuFunctions = {
 			menu.info.func = menu.BuffologyCreateNewFrame
 			UIDropDownMenu_AddButton(menu.info)
 		end,
+
+		-- Saves the new values
+		['Save'] = function()
+			local name = this:GetParent():GetName()
+			local frame = _G[name..'FrameTitle']:GetText()
+			if ( frame ~= strings.buffology_menu.frame_dropdown_title ) then
+				-- lib.debugging(frame)
+				if ( not settings.frames[frame] ) then return end
+
+				settings.frames[frame].anchorPoint = _G[name..'Option_anchorPointEditBox']:GetText()
+				settings.frames[frame].relativeTo = _G[name..'Option_relativeToEditBox']:GetText()
+				settings.frames[frame].relativePoint = _G[name..'Option_relativePointEditBox']:GetText()
+				settings.frames[frame].xOffset = _G[name..'Option_xOffsetEditBox']:GetText()
+				settings.frames[frame].yOffset = _G[name..'Option_yOffsetEditBox']:GetText()
+				settings.frames[frame].xGrowDir = _G[name..'Option_xGrowDirEditBox']:GetText()
+				settings.frames[frame].yGrowDir = _G[name..'Option_yGrowDirEditBox']:GetText()
+				settings.frames[frame].columns = _G[name..'Option_columnsEditBox']:GetText()
+				settings.frames[frame].xSpacing = _G[name..'Option_xSpacingEditBox']:GetText()
+				settings.frames[frame].ySpacing = _G[name..'Option_ySpacingEditBox']:GetText()
+
+				_G[frame]:SetPoint(settings.frames[frame].anchorPoint, settings.frames[frame].relativeTo, settings.frames[frame].relativePoint, settings.frames[frame].xOffset, settings.frames[frame].yOffset)
+			end
+		end,
 	},
 	
 	-- These functions handle the "Filter"-tab
 	['TabFilter'] = {
-		-- This is executed, when the "Filter"-tab becomes visible
+		-- This is executed, when the "Filter"-tab becomes visible (builds the buff list and applies the localized strings)
 		['OnShow'] = function(name)
+
+			-- lib.debugging('OnShow()')
+
 			_G[name..'Caption']:SetText(strings.buffology_menu.caption_filter)	-- set the panel's caption
+			_G[name..'SelectedAuraID']:SetText('')
+			_G[name..'SelectedAuraName']:SetText('')
+			_G[name..'SelectedFrame']:SetText('')
+
+			if ( not BuffologyAuraList ) then return end
+
+			local k, v, offset
+			wipe(menu.bufflist)
+			offset = 1
+			for k, v in pairs(BuffologyAuraList) do
+				if ( k ~= 'locale' ) then
+					menu.bufflist[offset] = {}
+					menu.bufflist[offset]['name'] = v
+					menu.bufflist[offset]['spellID'] = k
+					-- lib.debugging(offset..': '..menu.bufflist[offset].name..' ('..menu.bufflist[offset].spellID..')')
+					offset = offset + 1
+				end
+			end
+			table.sort(menu.bufflist, function(a, b) return a.name < b.name end)
 		end,
 
 		-- Updates the AuraList
 		['AuraList_Update'] = function()
-			lib.debugging('AuraList_Update()')
+
+			-- lib.debugging('AuraList_Update()')
+
+			if (#menu.bufflist == 0) then
+				BuffologyMenuFunctions.TabFilter.OnShow(MENUFRAMENAME..'TabFilter')
+			end
+
+			local numAura = #menu.bufflist
+			local line, offset, item
+
+			FauxScrollFrame_Update(_G[MENUFRAMENAME..'TabFilterList'], numAura, 15, 16)
+
+			for line = 1, 15 do
+				offset = line + FauxScrollFrame_GetOffset(_G[MENUFRAMENAME..'TabFilterList'])
+				if ( offset <= numAura ) then
+					_G[MENUFRAMENAME..'TabFilterEntry'..line]:Show()
+					_G[MENUFRAMENAME..'TabFilterEntry'..line].offset = offset
+					if ( settings.assignments[tostring(menu.bufflist[offset].spellID)] ) then
+						_G[MENUFRAMENAME..'TabFilterEntry'..line]:SetFormattedText('|cff00FF00%s|r', menu.bufflist[offset].name)
+					else
+						_G[MENUFRAMENAME..'TabFilterEntry'..line]:SetFormattedText('|cffDDDDDD%s|r', menu.bufflist[offset].name)
+					end
+					-- _G[MENUFRAMENAME..'TabFilterEntry'..line]:SetText(menu.bufflist[offset].name)
+				else
+					_G[MENUFRAMENAME..'TabFilterEntry'..line]:Hide()
+				end
+			end
+		end,
+
+		-- Sets the selected aura
+		['AuraList_OnClick'] = function(offset)
+			_G[MENUFRAMENAME..'TabFilterSelectedAuraID']:SetText(menu.bufflist[offset].spellID)
+			_G[MENUFRAMENAME..'TabFilterSelectedAuraName']:SetText(menu.bufflist[offset].name)
+			if ( settings.assignments[tostring(menu.bufflist[offset].spellID)] ) then
+				_G[MENUFRAMENAME..'TabFilterSelectedFrame']:SetText(settings.assignments[tostring(menu.bufflist[offset].spellID)])
+			else
+				_G[MENUFRAMENAME..'TabFilterSelectedFrame']:SetText(strings.buffology_menu.filter_dropdown_title)
+			end
+		end,
+
+		-- builds the DropDownMenu
+		['FrameDropDown_OnLoad'] = function()
+			wipe(menu.info)
+			menu.info.text = strings.buffology_menu.filter_dropdown_title
+			menu.info.isTitle = 1
+			UIDropDownMenu_AddButton(menu.info)
+
+			for k, v in pairs(settings.frames) do
+				wipe(menu.info)
+				menu.info.text = k
+				menu.info.func = menu.BuffologySetFilterFrame
+				UIDropDownMenu_AddButton(menu.info)
+			end
+		end,
+
+		-- Saves the assignment
+		['Save'] = function()
+			-- local name = this:GetParent():GetName()
+			local frame = _G[MENUFRAMENAME..'TabFilterSelectedFrame']:GetText()
+			if ( frame ~= strings.buffology_menu.filter_dropdown_title ) then
+				settings.assignments[_G[MENUFRAMENAME..'TabFilterSelectedAuraID']:GetText()] = _G[MENUFRAMENAME..'TabFilterSelectedFrame']:GetText()
+			end
 		end,
 	},
 }
@@ -122,6 +230,15 @@ BuffologyMenuFunctions = {
 		_G[MENUFRAMENAME..'TabFramesOption_columnsEditBox']:SetText(settings.frames[frame].columns)
 		_G[MENUFRAMENAME..'TabFramesOption_xSpacingEditBox']:SetText(settings.frames[frame].xSpacing)
 		_G[MENUFRAMENAME..'TabFramesOption_ySpacingEditBox']:SetText(settings.frames[frame].ySpacing)
+	end
+
+	--[[
+	
+	]]
+	menu.BuffologySetFilterFrame = function()
+		if (not _G[MENUFRAMENAME]) then return end
+		local frame = this.value or this:GetName()
+		_G[MENUFRAMENAME..'TabFilterSelectedFrame']:SetText(frame)
 	end
 
 	--[[

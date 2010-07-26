@@ -32,6 +32,8 @@ local localization = {
 			['frame_columnsCaption'] = 'columns',
 			['frame_xSpacingCaption'] = 'hor. spacing',
 			['frame_ySpacingCaption'] = 'ver. spacing',
+			['frame_saveButton'] = 'Save',
+			['filter_dropdown_title'] = 'Select frame for filtering...',
 		},
 	},
 }

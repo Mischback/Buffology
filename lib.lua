@@ -132,7 +132,9 @@ local lib = CreateFrame('Frame')						-- create the lib
 		STRING FindDisplayFrame(BUTTON icon)
 	]]
 	lib.FindDisplayFrame = function(icon)
-		if (icon.isDebuff) then
+		if ( settings.assignments[tostring(icon.spellID)] ) then
+			return settings.assignments[tostring(icon.spellID)]
+		elseif (icon.isDebuff) then
 			return 'Buffology_debuffs'
 		else
 			return 'Buffology_buffs'

@@ -178,6 +178,7 @@ local core = CreateFrame('Frame')							-- create the core
 				end
 
 															-- SetPoint() OF HELL!!!
+				lib.debugging(settings.frames[v.display].anchorPoint..', '..Buffology.framelist[v.display]:GetName()..', '..settings.frames[v.display].anchorPoint)
 				v:SetPoint(settings.frames[v.display].anchorPoint, 
 							Buffology.framelist[v.display], 
 							settings.frames[v.display].anchorPoint, 
@@ -269,10 +270,6 @@ local core = CreateFrame('Frame')							-- create the core
 		lib.SetUpFrames(settings.frames, Buffology)			-- create our frames
 
 		Buffology_trigger:RegisterEvent('UNIT_AURA')
-		Buffology_trigger:RegisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
-		Buffology_trigger:RegisterEvent('CHARACTER_POINTS_CHANGED')
-		Buffology_trigger:RegisterEvent('PLAYER_ENTERING_WORLD')
-		Buffology_trigger:RegisterEvent('PLAYER_XP_UPDATE')		-- DEBUG-purposes
 		Buffology_trigger:SetScript('OnEvent', core.Trigger)
 
 		Buffology_enchant.lastUpdate = 0

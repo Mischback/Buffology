@@ -287,6 +287,22 @@
 		</Frames>
 	</Frame>
 
+	<Button name="BuffologyAuraScrollButtonTemplate" virtual="true">
+		<Size><AbsDimension x="0" y="16" /></Size>
+		<Anchors>
+			<Anchor point="LEFT" relativeTo="$parent" relativePoint="LEFT">
+				<Offset><AbsDimension x="5" y="0" /></Offset>
+			</Anchor>
+			<Anchor point="RIGHT" relativeTo="$parent" relativePoint="LEFT">
+				<Offset><AbsDimension x="150" y="0" /></Offset>
+			</Anchor>
+		</Anchors>
+		<NormalFont style="GameFontHighlightLeft" />
+		<Scripts>
+			<OnClick> BuffologyMenuFunctions.TabFilter.AuraList_OnClick(this.offset) </OnClick>
+		</Scripts>
+	</Button>
+
 	<Frame name="BuffologyMenuSkel" virtual="true" toplevel="true" frameStrata="DIALOG" movable="true" enableMouse="true" parent="UIParent">
 		<Size><AbsDimension x="600" y="400" /></Size>
 		<Anchors>
@@ -572,6 +588,20 @@
 						</Anchors>
 					</Frame>
 
+					<Button name="$parentOption_Save" inherits="OptionsButtonTemplate" text="Save">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentOption_ySpacing" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="-50"/></Offset>
+							</Anchor>
+							<Anchor point="RIGHT" relativeTo="$parent" relativePoint="RIGHT">
+								<Offset><AbsDimension x="-20" y="0"/></Offset>
+							</Anchor>
+						</Anchors>
+						<Scripts>
+							<OnClick> BuffologyMenuFunctions.TabFrames.Save(); </OnClick>
+						</Scripts>
+					</Button>
+
 				</Frames>
 				<Scripts>
 					<OnShow> BuffologyMenuFunctions.TabFrames.OnShow(this:GetName()); </OnShow>
@@ -579,11 +609,49 @@
 			</Frame>
 
 			<Frame name="$parentTabFilter" inherits="BuffologyMenuPageTemplate" hidden="true">
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentSelectedAuraID" font="Fonts\FRIZQT__.TTF" text="spellID" justifyH="LEFT" justifyV="TOP">
+							<Color r="1" g="1" b="1" a="1"/>
+							<FontHeight val="14"/>
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent" x="230" y="-100" />
+							</Anchors>
+							<Shadow>
+								<Offset x="1" y="1" />
+								<Color r="0" g="0" b="0"/>
+							</Shadow>
+						</FontString>
+						<FontString name="$parentSelectedAuraName" font="Fonts\FRIZQT__.TTF" text="Buffology - Menu" justifyH="LEFT" justifyV="TOP">
+							<Color r="1" g="1" b="1" a="1"/>
+							<FontHeight val="14"/>
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent" x="280" y="-100" />
+							</Anchors>
+							<Shadow>
+								<Offset x="1" y="1" />
+								<Color r="0" g="0" b="0"/>
+							</Shadow>
+						</FontString>
+						<FontString name="$parentSelectedFrame" font="Fonts\FRIZQT__.TTF" text="Buffology - Menu" justifyH="LEFT" justifyV="TOP">
+							<Color r="1" g="1" b="1" a="1"/>
+							<FontHeight val="14"/>
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="$parent" x="230" y="-130" />
+							</Anchors>
+							<Shadow>
+								<Offset x="1" y="1" />
+								<Color r="0" g="0" b="0"/>
+							</Shadow>
+						</FontString>
+					</Layer>
+				</Layers>
 				<Frames>
+
 					<ScrollFrame name="$parentList" inherits="FauxScrollFrameTemplate">
 						<Anchors>
 							<Anchor point="TOPLEFT" relativeTo="$parent" relativePoint="TOPLEFT">
-								<Offset><AbsDimension x="5" y="-5" /></Offset>
+								<Offset><AbsDimension x="5" y="-75" /></Offset>
 							</Anchor>
 							<Anchor point="BOTTOMRIGHT" relativeTo="$parent" relativePoint="BOTTOMLEFT">
 								<Offset><AbsDimension x="175" y="5" /></Offset>
@@ -596,6 +664,139 @@
 							<OnShow> BuffologyMenuFunctions.TabFilter.AuraList_Update(); </OnShow>
 						</Scripts>
 					</ScrollFrame>
+
+					<!-- The DropDown-Menu to select the frame -->
+					<Frame name="$parentMenu" inherits="UIDropDownMenuTemplate">
+						<Anchors>
+							<Anchor point="TOPRIGHT" relativeTo="$parent" relativePoint="TOPRIGHT">
+								<Offset><AbsDimension x="-150" y="-10" /></Offset>
+							</Anchor>
+						</Anchors>
+						<Scripts>
+							<OnLoad> UIDropDownMenu_Initialize(this, BuffologyMenuFunctions.TabFilter.FrameDropDown_OnLoad); </OnLoad>
+						</Scripts>
+					</Frame>
+
+					<Button name="$parentEntry1" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentList" relativePoint="TOP">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry2" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry1" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry3" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry2" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry4" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry3" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry5" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry4" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry6" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry5" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry7" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry6" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry8" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry7" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry9" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry8" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry10" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry9" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry11" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry10" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry12" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry11" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry13" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry12" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry14" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry13" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentEntry15" inherits="BuffologyAuraScrollButtonTemplate">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentEntry14" relativePoint="BOTTOM">
+								<Offset><AbsDimension x="0" y="0" /></Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+
+					<Button name="$parent_Save" inherits="OptionsButtonTemplate" text="Save">
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parent" relativePoint="TOP">
+								<Offset><AbsDimension x="0" y="-150"/></Offset>
+							</Anchor>
+							<Anchor point="RIGHT" relativeTo="$parent" relativePoint="RIGHT">
+								<Offset><AbsDimension x="-20" y="0"/></Offset>
+							</Anchor>
+						</Anchors>
+						<Scripts>
+							<OnClick> BuffologyMenuFunctions.TabFilter.Save(); </OnClick>
+						</Scripts>
+					</Button>
+
 				</Frames>
 				<Scripts>
 					<OnShow> BuffologyMenuFunctions.TabFilter.OnShow(this:GetName()); </OnShow>
