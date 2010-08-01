@@ -11,7 +11,7 @@
 	STRING TimeFormat(FLOAT left) - Formats a timestring
 	VOID SetUpFrames(TABLE frames, FRAME parent) - Creates the buff-frames
 	STRING FindDisplayFrame(BUTTON icon) - Finds the name of the frame, an icon should be attached to
-	FRAME CreateIcon() - Creates an aura-icon
+	FRAME CreateIcon(INT id) - Creates an aura-icon
 	VOID UpdateAuraTime(FRAME self, INT elapsed) - Updates the time of an icon
 ]]
 
@@ -19,6 +19,22 @@ local ADDON_NAME, ns = ...								-- get the addons namespace to exchange functi
 local settings = ns.settings							-- get the settings
 local strings = ns.strings								-- get the localization
 local lib = CreateFrame('Frame')						-- create the lib
+-- *****************************************************
+local LBF = nil											-- ButtonFacade support START
+if (IsAddOnLoaded('ButtonFacade')) then					-- *
+	LBF = LibStub("LibButtonFacade")					-- *
+	if ( LBF ) then										-- *
+		lib.facadegroup = LBF:Group('Buffology', 'Buffs/Debuffs')
+		lib.facadegroup:Skin(settings.facade.groups['Buffs/Debuffs'].skin, settings.facade.groups['Buffs/Debuffs'].gloss, settings.facade.groups['Buffs/Debuffs'].backdrop, settings.facade.groups['Buffs/Debuffs'].colors)
+		LBF:RegisterSkinCallback('Buffology', function(_, skinID, gloss, backdrop, group, button, colors)
+			if not group then return end
+			settings.facade.groups[group].skin = skinID
+			settings.facade.groups[group].gloss = gloss
+			settings.facade.groups[group].backdrop = backdrop
+			settings.facade.groups[group].colors = colors
+		end, self)
+	end													-- *
+end														-- *
 -- *****************************************************
 
 	--[[ Debugging to ChatFrame
@@ -133,7 +149,13 @@ local lib = CreateFrame('Frame')						-- create the lib
 	]]
 	lib.FindDisplayFrame = function(icon)
 		if ( settings.assignments[tostring(icon.spellID)] ) then
-			return settings.assignments[tostring(icon.spellID)]
+			if _G[settings.assignments[tostring(icon.spellID)]] then
+				return settings.assignments[tostring(icon.spellID)]
+			elseif (icon.isDebuff) then
+				return 'Buffology_debuffs'
+			else
+				return 'Buffology_buffs'
+			end
 		elseif (icon.isDebuff) then
 			return 'Buffology_debuffs'
 		else
@@ -141,14 +163,28 @@ local lib = CreateFrame('Frame')						-- create the lib
 		end
 	end
 
+	--[[
+	
+	]]
+	lib.SortIcons = function(a, b)
+		if ( not a ) or ( not b) then return false end
+		if ( a.duration == 0 ) then
+			return true
+		elseif ( b.duration == 0 ) then
+			return false
+		else
+			return a.duration > b.duration
+		end
+	end
+
 	--[[ Creates a buff-/debuff-icon. It's a clickable button
 		FRAME CreateIcon()
 		TODO: Work on COUNT, perhaps DEBUFF-coloring
 	]]
-	lib.CreateIcon = function()
+	lib.CreateIcon = function(id)
 		-- lib.debugging('CreateIcon()')
 
-		local icon = CreateFrame("Button", nil, UIParent)
+		local icon = CreateFrame('Button', 'Buffology'..id, UIParent)
 		icon:EnableMouse(true)
 		icon:RegisterForClicks('RightButtonUp')
 		icon:SetScript('OnClick', lib.CancelBuff)
@@ -156,9 +192,12 @@ local lib = CreateFrame('Frame')						-- create the lib
 		icon:SetWidth(settings.static.iconSize)
 		icon:SetHeight(settings.static.iconSize)
 
-		local cd = CreateFrame("Cooldown", nil, icon)
+		icon.BuffologyID = id
+
+		local cd = CreateFrame('Cooldown', nil, icon)
 		cd:SetAllPoints(icon)
 		icon.cd = cd
+		icon.cd:Hide()
 
 		local texture = icon:CreateTexture(nil, "BACKGROUND")
 		texture:SetAllPoints(icon)
@@ -169,10 +208,10 @@ local lib = CreateFrame('Frame')						-- create the lib
 		icon.timestring = timestring
 		icon.timestring:SetText('00:00')
 
-		-- local count = icon:CreateFontString(nil, "OVERLAY")
-		-- count:SetFontObject(NumberFontNormal)
-		-- count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", -1, 0)
-		-- icon.count = count
+		local count = icon:CreateFontString(nil, "OVERLAY")
+		count:SetFontObject(NumberFontNormal)
+		count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", -1, 0)
+		icon.count = count
 
 		-- local overlay = icon:CreateTexture(nil, "OVERLAY")
 		-- overlay:SetTexture"Interface\\Buttons\\UI-Debuff-Overlays"
@@ -182,6 +221,11 @@ local lib = CreateFrame('Frame')						-- create the lib
 
 		icon:SetScript("OnEnter", lib.TTOnEnter)
 		icon:SetScript("OnLeave", lib.TTOnLeave)
+
+		if ( LBF ) then
+			-- lib.debugging('CreateIcon(): adding icon to ButtonFacade...')
+			lib.facadegroup:AddButton(icon)
+		end
 
 		icon.lastUpdate = 0
 

@@ -850,13 +850,16 @@
 		</Frames>
 
 		<Scripts>
-		   <OnShow>
+			<OnLoad>self:RegisterForDrag('LeftButton');</OnLoad>
+			<OnDragStart>self:StartMoving();</OnDragStart>
+			<OnDragStop>self:StopMovingOrSizing();</OnDragStop>
+			<OnShow>
 			   PlaySound("UChatScrollButton");
 			   BuffologyMenuFunctions.General.OnShow();
-		   </OnShow>
-		   <OnHide>
+			</OnShow>
+			<OnHide>
 			   PlaySound("UChatScrollButton");
-		   </OnHide>
+			</OnHide>
 		</Scripts>
 	</Frame>
 

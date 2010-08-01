@@ -22,6 +22,7 @@ local core = CreateFrame('Frame')							-- create the core
 	local Buffology_trigger = CreateFrame('Frame', 'Buffology_trigger', Buffology)
 	local Buffology_enchant = CreateFrame('Frame', 'Buffology_enchant', Buffology)
 	local Buffology_Icons = {}
+	local tempList = {}
 	Buffology.framelist = {}
 
 	--[[ Handles the slash-command
@@ -57,16 +58,20 @@ local core = CreateFrame('Frame')							-- create the core
 			if ( hasMainHandEnchant ) then
 				icon = Buffology_Icons[1]
 				if ( not icon ) then
-					icon = lib.CreateIcon()
+					icon = lib.CreateIcon(1)
 				end
 				icon.name = 'Mainhand'
+				lib.CollectAura(icon.name, 'TempEnchant (MH)')
+				icon.display = lib.FindDisplayFrame(icon)
 				icon.texture:SetTexture(GetInventoryItemTexture('player', 16))
+				icon.duration = 0
 				if ( mainHandExpiration ) then
-					icon.duration:SetText(lib.TimeFormat(mainHandExpiration/1000))
-					icon.duration:Show()
+					icon.timestring:SetText(lib.TimeFormat(mainHandExpiration/1000))
+					icon.timestring:Show()
 				else
-					icon.duration:Hide()
+					icon.timestring:Hide()
 				end
+				icon:SetScript('OnClick', function() CancelItemTempEnchantment(1) end)
 				icon:Show()
 				Buffology_Icons[1] = icon
 			else
@@ -75,20 +80,24 @@ local core = CreateFrame('Frame')							-- create the core
 				end
 			end
 
-			if ( offMainHandEnchant ) then
+			if ( hasOffHandEnchant ) then
 				icon = Buffology_Icons[2]
 				if ( not icon ) then
-					icon = lib.CreateIcon()
+					icon = lib.CreateIcon(2)
 				end
-				icon.name = 'Mainhand'
+				icon.name = 'Offhand'
+				lib.CollectAura(icon.name, 'TempEnchant (OH)')
+				icon.display = lib.FindDisplayFrame(icon)
 				icon.texture:SetTexture(GetInventoryItemTexture('player', 17))
+				icon.duration = 0
 				if ( offHandExpiration ) then
-					icon.duration:SetText(lib.TimeFormat(offHandExpiration/1000))
-					icon.duration:Show()
+					icon.timestring:SetText(lib.TimeFormat(offHandExpiration/1000))
+					icon.timestring:Show()
 				else
-					icon.duration:Hide()
+					icon.timestring:Hide()
 				end
 				icon:Show()
+				icon:SetScript('OnClick', function() CancelItemTempEnchantment(2) end)
 				Buffology_Icons[2] = icon
 			else
 				if ( Buffology_Icons[2] ) then				-- hide icon, if one has already been created
@@ -113,7 +122,7 @@ local core = CreateFrame('Frame')							-- create the core
 		else
 			-- lib.debugging(spellID..': '..name)
 			if ( not icon ) then							-- UNIT_AURA was triggered, but there is no icon for this index -> let's create one
-				icon = lib.CreateIcon()						-- create Icon if necessary
+				icon = lib.CreateIcon(index+offset)			-- create Icon if necessary
 			end
 
 			icon.name = name								-- set the name
@@ -130,18 +139,21 @@ local core = CreateFrame('Frame')							-- create the core
 				icon.timestring:Show()						-- show the text
 			else											-- we got a permanent aura
 				icon.timeleft = nil							-- no timeleft
+				icon.duration = 0
 				icon:SetScript('OnUpdate', nil)				-- no OnUpdate-handler necessary
 				icon.timestring:Hide()						-- hide the text
 			end
 
-			if ( icon.cd ) then								-- apply the cooldown-spiral TODO: Do we want this?
-				if ( duration and duration > 0 ) then
-					icon.cd:SetCooldown(timeleft - duration, duration)
-					icon.cd:Show()
-				else
-					icon.cd:Hide()
-				end
-			end
+			icon.count:SetText((count > 1 and count))
+
+			-- if ( icon.cd ) then								-- apply the cooldown-spiral TODO: Do we want this?
+				-- if ( duration and duration > 0 ) then
+					-- icon.cd:SetCooldown(timeleft - duration, duration)
+					-- icon.cd:Show()
+				-- else
+					-- icon.cd:Hide()
+				-- end
+			-- end
 
 			icon:SetID(index)
 
@@ -178,7 +190,7 @@ local core = CreateFrame('Frame')							-- create the core
 				end
 
 															-- SetPoint() OF HELL!!!
-				lib.debugging(settings.frames[v.display].anchorPoint..', '..Buffology.framelist[v.display]:GetName()..', '..settings.frames[v.display].anchorPoint)
+				v:ClearAllPoints()
 				v:SetPoint(settings.frames[v.display].anchorPoint, 
 							Buffology.framelist[v.display], 
 							settings.frames[v.display].anchorPoint, 
@@ -206,7 +218,20 @@ local core = CreateFrame('Frame')							-- create the core
 			core.UpdateIcon(unit, index, (settings.static.buff_maxicons + settings.static.enchant_maxicons), 'HARMFUL')
 		end
 
+		-- table.sort(Buffology_Icons, function(a, b) 
+			-- lib.SortIcons(a, b)
+		-- end)
+
 		core.SetIconPositions()
+
+		-- for _, v in pairs(Buffology_Icons) do
+			-- if (v) then
+				-- tempList[v.BuffologyID] = v
+			-- end
+		-- end
+		-- wipe(Buffology_Icons)
+		-- Buffology_Icons = tempList
+		-- wipe(tempList)
 
 	end
 
@@ -254,6 +279,11 @@ local core = CreateFrame('Frame')							-- create the core
 				BuffologyAuraList = {}
 				BuffologyAuraList['locale'] = GetLocale()
 			end
+
+			if ( not BuffologyFacade ) then
+				BuffologyFacade = settings.facade
+			end
+			settings.facade = BuffologyFacade
 		end
 
 	-- ***** Setting Up Buffology **************************
@@ -264,6 +294,10 @@ local core = CreateFrame('Frame')							-- create the core
 		BlizzFrame:UnregisterEvent('UNIT_AURA')				-- Unregister the event
 		BlizzFrame:Hide()									-- hide the default Blizzard BuffFrame
 
+		BlizzFrame = _G['TemporaryEnchantFrame']
+		BlizzFrame:Hide()
+		BlizzFrame:SetScript('OnUpdate', nil)
+
 		SLASH_BUFFOLOGY1 = strings.slashcommand				-- register slash-command
 		SlashCmdList['BUFFOLOGY'] = core.SlashHandler		-- register slash-command
 
@@ -273,7 +307,7 @@ local core = CreateFrame('Frame')							-- create the core
 		Buffology_trigger:SetScript('OnEvent', core.Trigger)
 
 		Buffology_enchant.lastUpdate = 0
-		-- Buffology_enchant:SetScript('OnUpdate', core.WeaponEnchantWatcher)
+		Buffology_enchant:SetScript('OnUpdate', core.WeaponEnchantWatcher)
 
 		core.Trigger(_, _, 'player')
 	end)

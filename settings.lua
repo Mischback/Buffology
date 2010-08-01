@@ -51,8 +51,17 @@ settings.frames = {
 	},
 }
 
-settings.assignments = {
-	
+settings.assignments = {}
+
+settings.facade = {
+	groups = {
+		['Buffs/Debuffs'] = {
+			skin =  'Blizzard',
+			gloss = false,
+			backdrop = false,
+			colors = {},
+		},
+	},
 }
 
 -- *****************************************************
