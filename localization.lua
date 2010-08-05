@@ -12,10 +12,15 @@ local localization = {
 	['default'] = {
 		['slashcommand'] = '/buffology',		-- the slash-command to trigger buffology actions
 		['menutrigger'] = 'menu',				-- option to slash-command to show buffology menu
+		['slash_nocommand'] = 'You did not give a option...',
+		['slash_menustring'] = '  /buffology menu - brings up the menu',
 		
 		['buffology_menu'] = {
+			['caption_general'] = 'General', 
 			['caption_frames'] = 'Frames', 
 			['caption_filter'] = 'Filter',
+			['general_timeformat_title'] = 'TimeFormat',
+			['general_timeformat_dropdown'] = 'Select time format',
 			['frame_dropdown_title'] = 'Select frame to configure...',
 			['frame_create_new'] = 'Create new Frame',
 			['frame_create_text'] = 'Please enter the name of your new frame...', 
@@ -32,6 +37,7 @@ local localization = {
 			['frame_columnsCaption'] = 'columns',
 			['frame_xSpacingCaption'] = 'hor. spacing',
 			['frame_ySpacingCaption'] = 'ver. spacing',
+			['frame_iconSizeCaption'] = 'icon size',
 			['frame_saveButton'] = 'Save',
 			['filter_dropdown_title'] = 'Select frame for filtering...',
 		},

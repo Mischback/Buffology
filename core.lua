@@ -22,6 +22,7 @@ local core = CreateFrame('Frame')							-- create the core
 	local Buffology_trigger = CreateFrame('Frame', 'Buffology_trigger', Buffology)
 	local Buffology_enchant = CreateFrame('Frame', 'Buffology_enchant', Buffology)
 	local Buffology_Icons = {}
+	local Buffology_Icons_sort = {}
 	local tempList = {}
 	Buffology.framelist = {}
 
@@ -36,6 +37,9 @@ local core = CreateFrame('Frame')							-- create the core
 				v:SetScript('OnClick', menu.BuffologySetActiveFrame)
 				v:Show()
 			end
+		else
+			lib.debugging(strings.slash_nocommand)
+			lib.debugging(strings.slash_menustring)
 		end
 	end
 
@@ -132,6 +136,8 @@ local core = CreateFrame('Frame')							-- create the core
 				icon.isDebuff = true						-- set debuff-flag
 			end
 
+			icon.display = lib.FindDisplayFrame(icon)
+
 			if ( duration > 0 ) then						-- we got a time-limited aura
 				icon.timeleft = timeleft					-- apply timeleft
 				icon.duration = timeleft					-- apply duration
@@ -157,8 +163,6 @@ local core = CreateFrame('Frame')							-- create the core
 
 			icon:SetID(index)
 
-			icon.display = lib.FindDisplayFrame(icon)
-
 			icon:Show()
 			Buffology_Icons[index+offset] = icon
 
@@ -175,7 +179,8 @@ local core = CreateFrame('Frame')							-- create the core
 		end
 
 		local xModifier, yModifier
-		for k, v in pairs(Buffology_Icons) do
+
+		for k, v in pairs(Buffology_Icons_sort) do
 			if ( v:IsShown() ) then							-- just do positioning for visible icons
 
 				xModifier = -1								-- default direction: LEFT
@@ -189,17 +194,25 @@ local core = CreateFrame('Frame')							-- create the core
 					yModifier = 1							-- switching to grow UP
 				end
 
+				v:SetHeight(settings.frames[v.display].iconSize or settings.static.iconSize)
+				v:SetWidth(settings.frames[v.display].iconSize or settings.static.iconSize)
 															-- SetPoint() OF HELL!!!
 				v:ClearAllPoints()
+				if ( lib.LBF ) then
+					-- lib.debugging('CreateIcon(): adding icon to ButtonFacade...')
+					lib.facadegroup:RemoveButton(v, true)
+					lib.facadegroup:AddButton(v)
+				end
 				v:SetPoint(settings.frames[v.display].anchorPoint, 
 							Buffology.framelist[v.display], 
 							settings.frames[v.display].anchorPoint, 
-							xModifier * (Buffology.framelist[v.display].icons % settings.frames[v.display].columns) * (settings.static.iconSize + settings.frames[v.display].xSpacing),
-							yModifier * (math.floor(Buffology.framelist[v.display].icons / settings.frames[v.display].columns)) * (settings.static.iconSize + settings.frames[v.display].ySpacing) )
+							xModifier * (Buffology.framelist[v.display].icons % settings.frames[v.display].columns) * ((settings.frames[v.display].iconSize or settings.static.iconSize) + settings.frames[v.display].xSpacing),
+							yModifier * (math.floor(Buffology.framelist[v.display].icons / settings.frames[v.display].columns)) * ((settings.frames[v.display].iconSize or settings.static.iconSize) + settings.frames[v.display].ySpacing) )
 															-- inc the number of icons on this frame!
 				Buffology.framelist[v.display].icons = Buffology.framelist[v.display].icons + 1
 			end
 		end
+		wipe(Buffology_Icons_sort)
 	end
 
 	--[[ This function is triggered by UNIT_AURA. It just walks over ALL of your buffs/debuffs to make sure, none is missed.
@@ -218,20 +231,13 @@ local core = CreateFrame('Frame')							-- create the core
 			core.UpdateIcon(unit, index, (settings.static.buff_maxicons + settings.static.enchant_maxicons), 'HARMFUL')
 		end
 
-		-- table.sort(Buffology_Icons, function(a, b) 
-			-- lib.SortIcons(a, b)
-		-- end)
-
+		for _, v in pairs(Buffology_Icons) do
+			if (v) then
+				table.insert(Buffology_Icons_sort, v)
+			end
+		end
+		table.sort(Buffology_Icons_sort, lib.SortIcons)
 		core.SetIconPositions()
-
-		-- for _, v in pairs(Buffology_Icons) do
-			-- if (v) then
-				-- tempList[v.BuffologyID] = v
-			-- end
-		-- end
-		-- wipe(Buffology_Icons)
-		-- Buffology_Icons = tempList
-		-- wipe(tempList)
 
 	end
 

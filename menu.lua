@@ -10,6 +10,8 @@ local lib = ns.lib										-- get the lib
 local menu = CreateFrame('Frame')						-- create the menu
 
 local MENUFRAMENAME = 'BuffologyMenu'
+local TIMEFORMAT_PLAIN = 'plain (5m)'
+local TIMEFORMAT_DETAIL = 'detail (05:23)'
 menu.info = {}
 menu.bufflist = {}
 -- *****************************************************
@@ -27,17 +29,47 @@ BuffologyMenuFunctions = {
 
 		-- apply localized strings
 		['OnShow'] = function()
+			_G[MENUFRAMENAME..'ButtonGeneral']:SetText(strings.buffology_menu.caption_general)	-- set the text of the "Frames"-button
 			_G[MENUFRAMENAME..'ButtonFrames']:SetText(strings.buffology_menu.caption_frames)	-- set the text of the "Frames"-button
 			_G[MENUFRAMENAME..'ButtonFilter']:SetText(strings.buffology_menu.caption_filter)	-- set the text of the "Filters"-button
 		end,
 
 		-- OnClick-Handler for tab-buttons
 		['TabButtonOnClick'] = function(button)
+			_G[MENUFRAMENAME..'TabGeneral']:Hide()
 			_G[MENUFRAMENAME..'TabFrames']:Hide()
 			_G[MENUFRAMENAME..'TabFilter']:Hide()
 			local _, item = string.find(button, MENUFRAMENAME..'Button')
 			item = string.sub(button, item + 1)
 			_G[MENUFRAMENAME..'Tab'..item]:Show()
+		end,
+	},
+
+	--
+	['TabGeneral'] = {
+		--
+		['OnShow'] = function(name)
+			_G[name..'Caption']:SetText(strings.buffology_menu.caption_general)	-- set the panel's caption
+			_G[name..'TimeFormatTitle']:SetText(strings.buffology_menu.general_timeformat_title)
+			_G[name..'TimeFormatMenuValue']:SetText(settings.options.timeFormat)
+		end,
+
+		--
+		['TimeFormatDropDown_OnLoad'] = function()
+			wipe(menu.info)
+			menu.info.text = strings.buffology_menu.general_timeformat_dropdown
+			menu.info.isTitle = 1
+			UIDropDownMenu_AddButton(menu.info)
+
+			wipe(menu.info)
+			menu.info.text = TIMEFORMAT_PLAIN
+			menu.info.func = menu.BuffologySetTimeFormat
+			UIDropDownMenu_AddButton(menu.info)
+
+			wipe(menu.info)
+			menu.info.text = TIMEFORMAT_DETAIL
+			menu.info.func = menu.BuffologySetTimeFormat
+			UIDropDownMenu_AddButton(menu.info)
 		end,
 	},
 	
@@ -58,6 +90,7 @@ BuffologyMenuFunctions = {
 			_G[name..'Option_columnsCaption']:SetText(strings.buffology_menu.frame_columnsCaption..':')
 			_G[name..'Option_xSpacingCaption']:SetText(strings.buffology_menu.frame_xSpacingCaption..':')
 			_G[name..'Option_ySpacingCaption']:SetText(strings.buffology_menu.frame_ySpacingCaption..':')
+			_G[name..'Option_iconSizeCaption']:SetText(strings.buffology_menu.frame_iconSizeCaption..':')
 			_G[name..'Option_anchorPointEditBox']:SetText('')
 			_G[name..'Option_relativeToEditBox']:SetText('')
 			_G[name..'Option_relativePointEditBox']:SetText('')
@@ -68,6 +101,7 @@ BuffologyMenuFunctions = {
 			_G[name..'Option_columnsEditBox']:SetText('')
 			_G[name..'Option_xSpacingEditBox']:SetText('')
 			_G[name..'Option_ySpacingEditBox']:SetText('')
+			_G[name..'Option_iconSizeEditBox']:SetText('')
 		end,
 
 		-- Builds the DropDownMenu
@@ -108,6 +142,7 @@ BuffologyMenuFunctions = {
 				settings.frames[frame].columns = _G[name..'Option_columnsEditBox']:GetText()
 				settings.frames[frame].xSpacing = _G[name..'Option_xSpacingEditBox']:GetText()
 				settings.frames[frame].ySpacing = _G[name..'Option_ySpacingEditBox']:GetText()
+				settings.frames[frame].iconSize = _G[name..'Option_iconSizeEditBox']:GetText()
 
 				_G[frame]:SetPoint(settings.frames[frame].anchorPoint, settings.frames[frame].relativeTo, settings.frames[frame].relativePoint, settings.frames[frame].xOffset, settings.frames[frame].yOffset)
 			end
@@ -216,6 +251,20 @@ BuffologyMenuFunctions = {
 	--[[
 	
 	]]
+	menu.BuffologySetTimeFormat = function()
+		local formatstring = this.value
+		if (formatstring == TIMEFORMAT_PLAIN) then
+			settings.options.timeFormat = 'plain'
+			_G[MENUFRAMENAME..'TabGeneralTimeFormatMenuValue']:SetText('plain')
+		else
+			settings.options.timeFormat = 'detail'
+			_G[MENUFRAMENAME..'TabGeneralTimeFormatMenuValue']:SetText('detail')
+		end
+	end
+
+	--[[
+	
+	]]
 	menu.BuffologySetActiveFrame = function()
 		if (not _G[MENUFRAMENAME]) then return end
 		local frame = this.value or this:GetName()
@@ -230,6 +279,7 @@ BuffologyMenuFunctions = {
 		_G[MENUFRAMENAME..'TabFramesOption_columnsEditBox']:SetText(settings.frames[frame].columns)
 		_G[MENUFRAMENAME..'TabFramesOption_xSpacingEditBox']:SetText(settings.frames[frame].xSpacing)
 		_G[MENUFRAMENAME..'TabFramesOption_ySpacingEditBox']:SetText(settings.frames[frame].ySpacing)
+		_G[MENUFRAMENAME..'TabFramesOption_iconSizeEditBox']:SetText(settings.frames[frame].iconSize or settings.static.iconSize)
 	end
 
 	--[[

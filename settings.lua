@@ -20,6 +20,7 @@ settings.options = {
 		['timestring'] = 'Fonts\\FRIZQT__.TTF',
 		['count'] = 'Fonts\\FRIZQT__.TTF',
 	},
+	['timeFormat'] = 'plain',
 }
 
 settings.frames = {
@@ -35,6 +36,7 @@ settings.frames = {
 		['rows'] = 2,
 		['xSpacing'] = 6,
 		['ySpacing'] = 10,
+		['iconSize'] = 32,
 	},
 	['Buffology_debuffs'] = {
 		['anchorPoint'] = 'TOPRIGHT',
@@ -48,6 +50,7 @@ settings.frames = {
 		['rows'] = 4,
 		['xSpacing'] = 6,
 		['ySpacing'] = 10,
+		['iconSize'] = 32,
 	},
 }
 

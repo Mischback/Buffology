@@ -20,13 +20,13 @@ local settings = ns.settings							-- get the settings
 local strings = ns.strings								-- get the localization
 local lib = CreateFrame('Frame')						-- create the lib
 -- *****************************************************
-local LBF = nil											-- ButtonFacade support START
+lib.LBF = nil											-- ButtonFacade support START
 if (IsAddOnLoaded('ButtonFacade')) then					-- *
-	LBF = LibStub("LibButtonFacade")					-- *
-	if ( LBF ) then										-- *
-		lib.facadegroup = LBF:Group('Buffology', 'Buffs/Debuffs')
+	lib.LBF = LibStub("LibButtonFacade")					-- *
+	if ( lib.LBF ) then										-- *
+		lib.facadegroup = lib.LBF:Group('Buffology', 'Buffs/Debuffs')
 		lib.facadegroup:Skin(settings.facade.groups['Buffs/Debuffs'].skin, settings.facade.groups['Buffs/Debuffs'].gloss, settings.facade.groups['Buffs/Debuffs'].backdrop, settings.facade.groups['Buffs/Debuffs'].colors)
-		LBF:RegisterSkinCallback('Buffology', function(_, skinID, gloss, backdrop, group, button, colors)
+		lib.LBF:RegisterSkinCallback('Buffology', function(_, skinID, gloss, backdrop, group, button, colors)
 			if not group then return end
 			settings.facade.groups[group].skin = skinID
 			settings.facade.groups[group].gloss = gloss
@@ -92,10 +92,10 @@ end														-- *
     	return fo
     end
 
-	--[[ Formats a float into a time
-		STRING TimeFormat(FLOAT left)
+	--[[
+	
 	]]
-	lib.TimeFormat = function(left)
+	lib.TimeFormatDetail = function(left)
 		local rtime = '00:00'
 		left = math.floor(left)
 		if ( left > 59 ) then
@@ -109,6 +109,32 @@ end														-- *
 			rtime = '00:'..seconds
 		end
 		return rtime
+	end
+
+	--[[
+	
+	]]
+	lib.TimeFormatPlain = function(left)
+		local rtime = ''
+		left = math.floor(left)
+		if ( left > 59 ) then
+			local minutes = math.floor(left/60)
+			rtime = minutes..'m'
+		else
+			rtime = left..'s'
+		end
+		return rtime
+	end
+
+	--[[ Formats a float into a time
+		STRING TimeFormat(FLOAT left)
+	]]
+	lib.TimeFormat = function(left)
+		if ( settings.options.timeFormat == 'plain' ) then
+			return lib.TimeFormatPlain(left)
+		else
+			return lib.TimeFormatDetail(left)
+		end
 	end
 
 	--[[ Creates the buff-frames
@@ -163,17 +189,24 @@ end														-- *
 		end
 	end
 
-	--[[
-	
+	--[[ 
+		BOOL SortIcons(FRAME a, FRAME b)
 	]]
 	lib.SortIcons = function(a, b)
+		-- lib.debugging('Sort(): a: '..a.name..', b: '..b.name)
 		if ( not a ) or ( not b) then return false end
-		if ( a.duration == 0 ) then
-			return true
-		elseif ( b.duration == 0 ) then
-			return false
+		if ( not a.timeleft ) then
+			if ( not b.timeleft ) then
+				return a.name < b.name
+			else
+				return true
+			end
 		else
-			return a.duration > b.duration
+			if ( not b.timeleft ) then
+				return false
+			else
+				return a.timeleft > b.timeleft
+			end
 		end
 	end
 
@@ -221,11 +254,6 @@ end														-- *
 
 		icon:SetScript("OnEnter", lib.TTOnEnter)
 		icon:SetScript("OnLeave", lib.TTOnLeave)
-
-		if ( LBF ) then
-			-- lib.debugging('CreateIcon(): adding icon to ButtonFacade...')
-			lib.facadegroup:AddButton(icon)
-		end
 
 		icon.lastUpdate = 0
 

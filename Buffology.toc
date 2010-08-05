@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Author: Mischback
 ## Title: Buffology
-## Version: 1.0
+## Version: 1.1
 ## SavedVariablesPerCharacter: BuffologyOptions, BuffologyFrames, BuffologyAssignments, BuffologyFacade
 ## SavedVariables: BuffologyAuraList
 ## OptionalDeps: ButtonFacade
