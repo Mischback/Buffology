@@ -52,6 +52,8 @@ local core = CreateFrame('Frame')							-- create the core
 		if ( self.lastUpdate > settings.static.updateInterval) then
 			-- lib.debugging('checking for WeaponEnchant')
 
+			local posToggle = false
+
 			if ( not PlayerFrame.unit or PlayerFrame.unit ~= "player" ) then
 				return										-- don't check, if the player doesn't control his char
 			end
@@ -63,6 +65,7 @@ local core = CreateFrame('Frame')							-- create the core
 				icon = Buffology_Icons[1]
 				if ( not icon ) then
 					icon = lib.CreateIcon(1)
+					posToggle = true
 				end
 				icon.name = 'Mainhand'
 				lib.CollectAura(icon.name, 'TempEnchant (MH)')
@@ -80,7 +83,10 @@ local core = CreateFrame('Frame')							-- create the core
 				Buffology_Icons[1] = icon
 			else
 				if ( Buffology_Icons[1] ) then				-- hide icon, if one has already been created
-					Buffology_Icons[1]:Hide()				-- hide icon, if one has already been created
+					if ( Buffology_Icons[1]:IsShown() ) then
+						Buffology_Icons[1]:Hide()
+						posToggle = true
+					end
 				end
 			end
 
@@ -88,6 +94,8 @@ local core = CreateFrame('Frame')							-- create the core
 				icon = Buffology_Icons[2]
 				if ( not icon ) then
 					icon = lib.CreateIcon(2)
+					lib.debugging('create icon 2')
+					posToggle = true
 				end
 				icon.name = 'Offhand'
 				lib.CollectAura(icon.name, 'TempEnchant (OH)')
@@ -105,8 +113,21 @@ local core = CreateFrame('Frame')							-- create the core
 				Buffology_Icons[2] = icon
 			else
 				if ( Buffology_Icons[2] ) then				-- hide icon, if one has already been created
-					Buffology_Icons[2]:Hide()				-- hide icon, if one has already been created
+					if ( Buffology_Icons[2]:IsShown() ) then
+						Buffology_Icons[2]:Hide()
+						posToggle = true
+					end
 				end
+			end
+
+			if ( posToggle ) then
+				for _, v in pairs(Buffology_Icons) do
+					if (v) then
+						table.insert(Buffology_Icons_sort, v)
+					end
+				end
+				table.sort(Buffology_Icons_sort, lib.SortIcons)
+				core.SetIconPositions()
 			end
 
 			self.lastUpdate = 0
@@ -174,6 +195,7 @@ local core = CreateFrame('Frame')							-- create the core
 		VOID SetIconPositions()
 	]]
 	core.SetIconPositions = function()
+
 		for _, v in pairs(Buffology.framelist) do			-- clear all frames
 			v.icons = 0										-- no icons in any frame
 		end
